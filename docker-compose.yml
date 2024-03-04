@@ -1,0 +1,52 @@
+---
+version: '2'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.1
+    hostname: zookeeper
+    container_name: zookeeper
+    volumes:
+      - ./zookeeper_data:/var/lib/zookeeper/data
+      - ./zookeeper-_log:/var/lib/zookeeper/log
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zookeeper:2888:3888;2181
+
+  broker:
+    image: confluentinc/cp-kafka:7.4.1
+    hostname: broker
+    container_name: broker
+    volumes:
+      - ./broker-data:/var/lib/kafka/data
+    depends_on:
+      - zookeeper
+
+    ports:
+      - 9092:9092
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://broker:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: HOST:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_SNAPSHOT_TRUST_EMPTY: true
+      KAFKA_CONFLUENT_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # blocks topic creation until broker is reachable
+  init-broker-topic:
+    image: confluentinc/cp-kafka:7.4.1
+    depends_on:
+      - broker
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic trades --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server broker:29092 --list
+      "
