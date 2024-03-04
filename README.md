@@ -34,7 +34,8 @@ This application processes global commodity trade statistics using Apache Kafka,
 
 1. **Producer Application**:
 
-    - Ensure you have the CSV file downloaded and stored in the `TradeStats/app/src/main/java/resources` directory.
+    - Ensure you have the CSV file downloaded. Create a new folder called `resources` and copy the csv into it such that it resembles the directory structure:`TradeStats/app/src/main/resources/commodity_trade_statistics_data.csv` .
+   
     - While in the TradeStats directory, run the producer application to publish trade data to the Kafka topic:
 
       ```
