@@ -6,7 +6,7 @@ build
 
 .idea
 app/build
-app/src/main/resources/*
+app/src/main/resources/commodity_trade_statistics_data.csv
 broker-data
 zookeeper-_log
 zookeeper_data
